@@ -332,12 +332,22 @@ function showFinalSummary(summary) {
         <div class="mm-email-box">${summary.followUpEmail || ''}</div>
       </div>
 
-      <button onclick="navigator.clipboard.writeText(JSON.stringify(${JSON.stringify(summary)}, null, 2))"
+      <button id="mm-copy-summary-btn"
         class="mm-btn mm-btn-primary" style="width:100%;margin-top:10px">
         📋 Copy Summary
       </button>
     </div>
   `;
+
+  // Attach event listener after innerHTML is set (no inline onclick = CSP safe)
+  document.getElementById('mm-copy-summary-btn').addEventListener('click', () => {
+    navigator.clipboard.writeText(
+      JSON.stringify(summary, null, 2)
+    ).then(() => {
+      const btn = document.getElementById('mm-copy-summary-btn');
+      if (btn) { btn.textContent = '✓ Copied!'; setTimeout(() => { btn.textContent = '📋 Copy Summary'; }, 2000); }
+    });
+  });
 }
 
 // ─── Timer ───────────────────────────────────────────────────────────────────
