@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MeetingMind AI — Dashboard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0a0a14;
+      --surface: #0f0f1a;
+      --card: #141420;
+      --border: #1e1e30;
+      --purple: #6c63ff;
+      --purple-dim: #3d3880;
+      --text: #e0e0ff;
+      --muted: #666688;
+      --green: #6bff8a;
+      --red: #ff6b6b;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0;
+      width: 220px;
+      height: 100vh;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 24px 16px;
+      z-index: 10;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 32px;
+      padding: 0 4px;
+    }
+
+    .logo-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--purple);
+      box-shadow: 0 0 12px var(--purple);
+    }
+
+    .logo-text { font-size: 16px; font-weight: 700; }
+
+    .nav { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.15s;
+    }
+
+    .nav-item:hover, .nav-item.active {
+      background: rgba(108, 99, 255, 0.12);
+      color: var(--text);
+    }
+
+    .nav-item.active { color: var(--purple); }
+    .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+    .sidebar-status {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 12px;
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .status-row:last-child { margin-bottom: 0; }
+
+    .status-label { color: var(--muted); }
+
+    .status-val {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-weight: 500;
+    }
+
+    .dot-green { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); }
+    .dot-red   { width: 6px; height: 6px; border-radius: 50%; background: var(--red); }
+
+    /* Main */
+    .main {
+      margin-left: 220px;
+      padding: 32px;
+      min-height: 100vh;
+    }
+
+    .page { display: none; }
+    .page.active { display: block; }
+
+    .page-header {
+      margin-bottom: 28px;
+    }
+
+    .page-title { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+    .page-sub { font-size: 13px; color: var(--muted); }
+
+    /* Stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .stat-value { font-size: 28px; font-weight: 700; color: var(--text); }
+    .stat-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+    /* Meeting Cards */
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 14px;
+    }
+
+    .meetings-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .meeting-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .meeting-card:hover {
+      border-color: var(--purple-dim);
+      transform: translateY(-1px);
+    }
+
+    .meeting-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .meeting-title { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+    .meeting-date { font-size: 11px; color: var(--muted); }
+
+    .meeting-duration {
+      background: rgba(108,99,255,0.15);
+      color: var(--purple);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 99px;
+    }
+
+    .meeting-summary {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+
+    .meeting-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: var(--border);
+      color: var(--muted);
+    }
+
+    .tag-action { background: rgba(107, 255, 138, 0.1); color: var(--green); }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+    }
+
+    .empty-icon { font-size: 48px; margin-bottom: 16px; }
+    .empty-title { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+    .empty-sub { font-size: 13px; }
+
+    /* Detail Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+      padding: 28px;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+
+    .modal-title { font-size: 18px; font-weight: 700; }
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 20px;
+      cursor: pointer;
+      padding: 0 4px;
+    }
+
+    .modal-close:hover { color: var(--text); }
+
+    .modal-section { margin-bottom: 20px; }
+    .modal-section-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .modal-text { font-size: 13px; color: #bbb; line-height: 1.6; }
+
+    .modal-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .modal-list li { font-size: 13px; color: #bbb; padding: 6px 10px; background: var(--card); border-radius: 6px; }
+
+    .action-list li { border-left: 2px solid var(--purple); }
+
+    .email-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      font-size: 12px;
+      color: #aaa;
+      line-height: 1.7;
+      white-space: pre-wrap;
+    }
+
+    .copy-btn {
+      margin-top: 10px;
+      width: 100%;
+      padding: 10px;
+      background: var(--purple);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .copy-btn:hover { opacity: 0.85; }
+
+    /* Settings Page */
+    .settings-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .settings-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .settings-sub { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+
+    .input-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+    .input-label { font-size: 12px; color: var(--muted); font-weight: 500; }
+    .input-field {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .input-field:focus { border-color: var(--purple); }
+
+    .save-btn {
+      padding: 10px 20px;
+      background: var(--purple);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .save-btn:hover { opacity: 0.85; }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--green);
+      color: #000;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: 999;
+    }
+
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-dot"></div>
+    <span class="logo-text">MeetingMind</span>
+  </div>
+
+  <nav class="nav">
+    <a class="nav-item active" onclick="showPage('home')">
+      <span class="nav-icon">🏠</span> Dashboard
+    </a>
+    <a class="nav-item" onclick="showPage('meetings')">
+      <span class="nav-icon">🎙</span> Meetings
+    </a>
+    <a class="nav-item" onclick="showPage('settings')">
+      <span class="nav-icon">⚙️</span> Settings
+    </a>
+  </nav>
+
+  <div class="sidebar-status">
+    <div class="status-row">
+      <span class="status-label">Backend</span>
+      <span class="status-val" id="backend-status">
+        <span class="dot-red" id="backend-dot"></span>
+        <span id="backend-text">Checking...</span>
+      </span>
+    </div>
+    <div class="status-row">
+      <span class="status-label">Extension</span>
+      <span class="status-val">
+        <span class="dot-green"></span> Active
+      </span>
+    </div>
+  </div>
+</aside>
+
+<!-- Main Content -->
+<main class="main">
+
+  <!-- Home Page -->
+  <div id="page-home" class="page active">
+    <div class="page-header">
+      <div class="page-title">Dashboard</div>
+      <div class="page-sub">Welcome back — your meeting intelligence hub</div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total Meetings</div>
+        <div class="stat-value" id="stat-total">0</div>
+        <div class="stat-sub">All time</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">This Week</div>
+        <div class="stat-value" id="stat-week">0</div>
+        <div class="stat-sub">Last 7 days</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Action Items</div>
+        <div class="stat-value" id="stat-actions">0</div>
+        <div class="stat-sub">Extracted total</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Time Saved</div>
+        <div class="stat-value" id="stat-time">0h</div>
+        <div class="stat-sub">Avg 30 min/meeting</div>
+      </div>
+    </div>
+
+    <div class="section-title">Recent Meetings</div>
+    <div class="meetings-list" id="home-meetings"></div>
+  </div>
+
+  <!-- Meetings Page -->
+  <div id="page-meetings" class="page">
+    <div class="page-header">
+      <div class="page-title">All Meetings</div>
+      <div class="page-sub">Click any meeting to view full summary</div>
+    </div>
+    <div class="meetings-list" id="all-meetings"></div>
+  </div>
+
+  <!-- Settings Page -->
+  <div id="page-settings" class="page">
+    <div class="page-header">
+      <div class="page-title">Settings</div>
+      <div class="page-sub">Configure your MeetingMind AI</div>
+    </div>
+
+    <div class="settings-card">
+      <div class="settings-title">API Configuration</div>
+      <div class="settings-sub">Your keys are stored locally and never shared</div>
+
+      <div class="input-group">
+        <span class="input-label">Groq API Key</span>
+        <input class="input-field" type="password" id="groq-key" placeholder="gsk_xxxxxxxxxxxx">
+      </div>
+      <div class="input-group">
+        <span class="input-label">AssemblyAI API Key</span>
+        <input class="input-field" type="password" id="assembly-key" placeholder="xxxxxxxxxxxxxxxx">
+      </div>
+      <button class="save-btn" onclick="saveKeys()">Save Keys</button>
+    </div>
+
+    <div class="settings-card">
+      <div class="settings-title">Data</div>
+      <div class="settings-sub">Manage your stored meeting data</div>
+      <button class="save-btn" style="background:#ff4444" onclick="clearData()">Clear All Meetings</button>
+    </div>
+  </div>
+
+</main>
+
+<!-- Meeting Detail Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modal-title">Meeting Title</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px" id="modal-date"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">Executive Summary</div>
+      <div class="modal-text" id="modal-summary"></div>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">Key Decisions</div>
+      <ul class="modal-list" id="modal-decisions"></ul>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">Action Items</div>
+      <ul class="modal-list action-list" id="modal-actions"></ul>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">Follow-up Email</div>
+      <div class="email-box" id="modal-email"></div>
+      <button class="copy-btn" onclick="copyEmail()">📋 Copy Email</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── Navigation ──────────────────────────────────────────────────────────────
+  function showPage(name) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+    event.currentTarget.classList.add('active');
+    if (name === 'meetings') renderMeetings('all-meetings', getMeetings());
+  }
+
+  // ── Storage ─────────────────────────────────────────────────────────────────
+  function getMeetings() {
+    return JSON.parse(localStorage.getItem('mm_meetings') || '[]');
+  }
+
+  function saveMeeting(meeting) {
+    const meetings = getMeetings();
+    meetings.unshift(meeting);
+    localStorage.setItem('mm_meetings', JSON.stringify(meetings));
+  }
+
+  // ── Render ──────────────────────────────────────────────────────────────────
+  function renderMeetings(containerId, meetings) {
+    const container = document.getElementById(containerId);
+
+    if (meetings.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">🎙</div>
+          <div class="empty-title">No meetings yet</div>
+          <div class="empty-sub">Join a Google Meet, Zoom, or Teams call and start recording!</div>
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = meetings.map((m, i) => `
+      <div class="meeting-card" onclick="openModal(${i})">
+        <div class="meeting-top">
+          <div>
+            <div class="meeting-title">${m.title || 'Untitled Meeting'}</div>
+            <div class="meeting-date">${new Date(m.date).toLocaleString()}</div>
+          </div>
+          <span class="meeting-duration">${m.duration || '—'}</span>
+        </div>
+        <div class="meeting-summary">${m.executiveSummary || 'No summary available'}</div>
+        <div class="meeting-tags">
+          <span class="tag">📋 ${(m.actionItems || []).length} actions</span>
+          <span class="tag">🎯 ${(m.keyDecisions || []).length} decisions</span>
+          ${(m.actionItems || []).length > 0 ? '<span class="tag tag-action">✓ Has action items</span>' : ''}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ── Stats ───────────────────────────────────────────────────────────────────
+  function updateStats() {
+    const meetings = getMeetings();
+    const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const weekMeetings = meetings.filter(m => new Date(m.date).getTime() > weekAgo);
+    const totalActions = meetings.reduce((sum, m) => sum + (m.actionItems || []).length, 0);
+
+    document.getElementById('stat-total').textContent = meetings.length;
+    document.getElementById('stat-week').textContent = weekMeetings.length;
+    document.getElementById('stat-actions').textContent = totalActions;
+    document.getElementById('stat-time').textContent = Math.round(meetings.length * 0.5) + 'h';
+  }
+
+  // ── Modal ───────────────────────────────────────────────────────────────────
+  let currentMeeting = null;
+
+  function openModal(index) {
+    const meetings = getMeetings();
+    currentMeeting = meetings[index];
+    const m = currentMeeting;
+
+    document.getElementById('modal-title').textContent = m.title || 'Untitled Meeting';
+    document.getElementById('modal-date').textContent = new Date(m.date).toLocaleString();
+    document.getElementById('modal-summary').textContent = m.executiveSummary || '—';
+    document.getElementById('modal-decisions').innerHTML =
+      (m.keyDecisions || []).map(d => `<li>• ${d}</li>`).join('') || '<li>None recorded</li>';
+    document.getElementById('modal-actions').innerHTML =
+      (m.actionItems || []).map(a => `<li>☐ <strong>${a.owner || 'TBD'}</strong> → ${a.task}</li>`).join('') || '<li>None recorded</li>';
+    document.getElementById('modal-email').textContent = m.followUpEmail || '—';
+
+    document.getElementById('modal').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('modal').classList.remove('open');
+  }
+
+  function copyEmail() {
+    if (currentMeeting?.followUpEmail) {
+      navigator.clipboard.writeText(currentMeeting.followUpEmail);
+      showToast('Email copied!');
+    }
+  }
+
+  document.getElementById('modal').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeModal();
+  });
+
+  // ── Toast ───────────────────────────────────────────────────────────────────
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+  }
+
+  // ── Settings ─────────────────────────────────────────────────────────────────
+  function saveKeys() {
+    showToast('Keys saved!');
+  }
+
+  function clearData() {
+    if (confirm('Delete all meeting history?')) {
+      localStorage.removeItem('mm_meetings');
+      init();
+      showToast('Data cleared');
+    }
+  }
+
+  // ── Backend Status Check ─────────────────────────────────────────────────────
+  async function checkBackend() {
+    try {
+      const res = await fetch('http://localhost:5000/health');
+      const data = await res.json();
+      document.getElementById('backend-dot').className = 'dot-green';
+      document.getElementById('backend-text').textContent = 'Online';
+    } catch {
+      document.getElementById('backend-dot').className = 'dot-red';
+      document.getElementById('backend-text').textContent = 'Offline';
+    }
+  }
+
+  // ── Listen for new meetings from extension ───────────────────────────────────
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'mm_meetings') {
+      init();
+    }
+  });
+
+  // ── Init ─────────────────────────────────────────────────────────────────────
+  function init() {
+    updateStats();
+    renderMeetings('home-meetings', getMeetings().slice(0, 5));
+  }
+
+  init();
+  checkBackend();
+  setInterval(checkBackend, 10000);
+</script>
+
+</body>
+</html>

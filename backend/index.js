@@ -4,11 +4,18 @@ const cors = require('cors');
 const Groq = require('groq-sdk');
 const axios = require('axios');
 
+const path = require('path');
+
 const app = express();
 const PORT = 5000;
 
 app.use(cors({ origin: '*' }));
 app.use(express.json({ limit: '10mb' }));
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
