@@ -10,7 +10,7 @@
       width: 300px;
       background: #0f0f1a;
       color: #e0e0ff;
-      font-family: 'Inter', -apple-system, sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       font-size: 13px;
     }
 
@@ -23,13 +23,7 @@
       gap: 10px;
     }
 
-    .dot {
-      width: 10px; height: 10px;
-      border-radius: 50%;
-      background: #6c63ff;
-      box-shadow: 0 0 10px #6c63ff;
-    }
-
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: #6c63ff; box-shadow: 0 0 10px #6c63ff; }
     .title { font-weight: 700; font-size: 15px; }
     .subtitle { font-size: 11px; color: #666; margin-top: 2px; }
 
@@ -43,31 +37,18 @@
       margin-bottom: 12px;
     }
 
-    .info-card p {
-      font-size: 12px;
-      color: #888;
-      line-height: 1.6;
-    }
-
+    .info-card p { font-size: 12px; color: #888; line-height: 1.6; }
     .info-card strong { color: #aaa; }
 
-    .sites {
-      display: flex;
-      gap: 6px;
-      margin-top: 10px;
-      flex-wrap: wrap;
-    }
+    .sites { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+    .site-badge { background: #1a1a2e; border: 1px solid #2a2a40; border-radius: 6px; padding: 4px 8px; font-size: 11px; color: #888; }
 
-    .site-badge {
-      background: #1a1a2e;
-      border: 1px solid #2a2a40;
-      border-radius: 6px;
-      padding: 4px 8px;
-      font-size: 11px;
-      color: #888;
-    }
+    .status-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #2a2a40; margin-right: 6px; }
+    .status-dot.active { background: #6bff8a; box-shadow: 0 0 6px #6bff8a; }
+    .status-text { font-size: 12px; color: #666; display: flex; align-items: center; }
 
-    .login-btn {
+    .open-btn {
       width: 100%;
       padding: 11px;
       background: linear-gradient(135deg, #6c63ff, #8b5cf6);
@@ -80,34 +61,9 @@
       margin-bottom: 8px;
     }
 
-    .login-btn:hover { opacity: 0.9; }
+    .open-btn:hover { opacity: 0.9; }
 
-    .status-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 8px 0;
-    }
-
-    .status-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: #2a2a40;
-      margin-right: 6px;
-    }
-
-    .status-dot.active { background: #6bff8a; box-shadow: 0 0 6px #6bff8a; }
-
-    .status-text { font-size: 12px; color: #666; display: flex; align-items: center; }
-
-    .footer {
-      padding: 10px 16px;
-      border-top: 1px solid #1a1a2e;
-      font-size: 11px;
-      color: #444;
-      text-align: center;
-    }
-
+    .footer { padding: 10px 16px; border-top: 1px solid #1a1a2e; font-size: 11px; color: #444; text-align: center; }
     a { color: #6c63ff; text-decoration: none; }
   </style>
 </head>
@@ -124,7 +80,6 @@
     <div class="info-card">
       <p><strong>How it works:</strong><br>
       Join a meeting — MeetingMind automatically opens a floating panel to capture notes, key points, and action items in real-time.</p>
-
       <div class="sites">
         <span class="site-badge">Google Meet</span>
         <span class="site-badge">Zoom</span>
@@ -140,20 +95,13 @@
       <span style="font-size:11px;color:#6c63ff;">v1.0.0</span>
     </div>
 
-    <button class="login-btn" onclick="openDashboard()">
-      Open Dashboard
-    </button>
+    <button class="open-btn" id="open-dashboard-btn">Open Dashboard</button>
   </div>
 
   <div class="footer">
-    <a href="http://localhost:5000" target="_blank">Dashboard</a> ·
-    <a href="#" target="_blank">Help</a>
+    <a href="http://localhost:5000" target="_blank">Dashboard</a> · <a href="#">Help</a>
   </div>
 
-  <script>
-    function openDashboard() {
-      chrome.tabs.create({ url: 'http://localhost:5000' });
-    }
-  </script>
+  <script src="popup.js"></script>
 </body>
 </html>
